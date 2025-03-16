@@ -27,8 +27,7 @@ pipeline {
         stage('Build Order Service') {
             steps {
                 dir('assignment2/order-service') {
-                    def mvnHome = tool 'Maven3'
-                     bat "\"${mvnHome}\\bin\\mvn\" clean package"
+                     bat "mvn clean package"
                 }
             }
         }
