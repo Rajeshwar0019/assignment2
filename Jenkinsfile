@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        sonarRunner 'SonarQubeScanner'
-    }
-    
     environment {
         REGISTRY = "2022bcd0019" // Docker Hub or registry username
         TAG = "latest"
@@ -23,7 +19,6 @@ pipeline {
                         bat "npm install"
                         bat "npm test"
                     }
-                    // Additional build steps can be added here if needed
                 }
             }
         }
@@ -37,20 +32,20 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    // Ensure your SonarQube server is set up in Jenkins Global Configuration with the name "SonarQube"
+                    // Retrieve the SonarQube Scanner installation.
+                    // Make sure that in Jenkins Global Tool Configuration you have set up a SonarQube Scanner
+                    // with the name 'SonarQubeScanner'
+                    def sonarHome = tool name: 'SonarQubeScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                    
+                    // withSonarQubeEnv will inject the necessary environment variables (like SONAR_HOST_URL and SONAR_AUTH_TOKEN)
                     withSonarQubeEnv('SonarQube') {
-                        // Analyze the user-service (Node.js project)
+                        // Analyze the Node.js project
                         dir('assignment2/user-service') {
-                            bat """ ^
-                              -Dsonar.projectKey=assignment2 ^
-                              -Dsonar.sources=. ^
-                              -Dsonar.host.url=%SONAR_HOST_URL% ^
-                              -Dsonar.login=%SONAR_AUTH_TOKEN%"
-                              """
+                            bat "\"${sonarHome}\\bin\\sonar-scanner\" -Dsonar.projectKey=assignment2 -Dsonar.sources=. -Dsonar.login=%SONAR_AUTH_TOKEN%"
                         }
-                        // Analyze the order-service (Maven project)
+                        // Analyze the Maven project
                         dir('assignment2/order-service') {
-                           bat "mvn sonar:sonar -Dsonar.projectKey=order-service -Dsonar.host.url=%SONAR_HOST_URL% -Dsonar.login=%SONAR_AUTH_TOKEN%"
+                            bat "mvn sonar:sonar -Dsonar.projectKey=order-service -Dsonar.login=%SONAR_AUTH_TOKEN%"
                         }
                     }
                 }
@@ -59,7 +54,6 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    // Build Docker images using the correct build contexts
                     docker.build("${REGISTRY}/assignment2/user-service:${TAG}", "assignment2/user-service")
                     docker.build("${REGISTRY}/assignment2/order-service:${TAG}", "assignment2/order-service")
                 }
@@ -68,11 +62,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Remove any existing containers if they exist
                     bat "docker rm -f user-service || echo 'No existing user-service container'"
                     bat "docker rm -f order-service || echo 'No existing order-service container'"
-
-                    // Run the containers with the mapped ports
                     bat "docker run -d -p 7101:7001 --name user-service ${REGISTRY}/assignment2/user-service:${TAG}"
                     bat "docker run -d -p 7102:7002 --name order-service ${REGISTRY}/assignment2/order-service:${TAG}"
                 }
