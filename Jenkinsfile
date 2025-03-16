@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/your-username/multi-service-demo.git'
+                git branch: 'main', url: 'https://github.com/vamsi-krishna-2005/assignment21.git'
             }
         }
         stage('Build User Service') {
