@@ -14,7 +14,7 @@ pipeline {
         }
         stage('Build User Service') {
             steps {
-                dir('user-service') {
+                dir('assignment2/user-service') {
                     nodejs('nodejs') {
                     bat "npm install"
                     bat "npm test"
@@ -26,7 +26,7 @@ pipeline {
         }
         stage('Build Order Service') {
             steps {
-                dir('order-service') {
+                dir('assignment2/order-service') {
                     bat "mvn clean package"
                 }
             }
