@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        tool name: 'sonar-scanner', type: 'com.cloudbees.jenkins.plugins.customtools.CustomTool'
+        sonarRunner 'SonarQubeScanner'
     }
     
     environment {
