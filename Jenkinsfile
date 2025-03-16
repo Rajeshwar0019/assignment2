@@ -35,8 +35,8 @@ pipeline {
             steps {
                 script {
                     // Build Docker images for each service
-                    docker.build("${REGISTRY}/assignment2/user-service:${TAG}", "user-service")
-                    docker.build("${REGISTRY}/assignment2/order-service:${TAG}", "order-service")
+                    docker.build("${REGISTRY}/assignment2/user-service:${TAG}", "assignment2/user-service")
+                    docker.build("${REGISTRY}/assignment2/order-service:${TAG}", "assignment2/order-service")
                 }
             }
         }
