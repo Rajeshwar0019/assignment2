@@ -33,15 +33,23 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
+                    def scannerHome = tool 'SonarScannerCLI'
                     // Ensure your SonarQube server is set up in Jenkins Global Configuration with the name "SonarQube"
                     withSonarQubeEnv('SonarQube') {
                         // Analyze the user-service (Node.js project)
                         dir('assignment2/user-service') {
-                            bat "sonar-scanner -Dsonar.projectKey=assignment2 -Dsonar.sources=. -Dsonar.host.url=%SONAR_HOST_URL% -Dsonar.login=%SONAR_AUTH_TOKEN%"
+                            bat "\"${scannerHome}\\bin\\sonar-scanner\" ^
+                              -Dsonar.projectKey=assignment2 ^
+                              -Dsonar.sources=. ^
+                              -Dsonar.host.url=%SONAR_HOST_URL% ^
+                              -Dsonar.login=%SONAR_AUTH_TOKEN%"
                         }
                         // Analyze the order-service (Maven project)
                         dir('assignment2/order-service') {
-                            bat "mvn sonar:sonar -Dsonar.projectKey=assignment2 -Dsonar.host.url=%SONAR_HOST_URL% -Dsonar.login=%SONAR_AUTH_TOKEN%"
+                            bat "mvn sonar:sonar ^
+                            -Dsonar.projectKey=assignment2 ^
+                            -Dsonar.host.url=%SONAR_HOST_URL% ^
+                            -Dsonar.login=%SONAR_AUTH_TOKEN%"
                         }
                     }
                 }
