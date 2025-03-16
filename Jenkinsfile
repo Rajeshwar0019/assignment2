@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY = "2022bcd0019" // Change to your Docker Hub or registry username
+        REGISTRY = "2022bcd0019" // Docker Hub or registry username
         TAG = "latest"
     }
 
@@ -16,25 +16,41 @@ pipeline {
             steps {
                 dir('assignment2/user-service') {
                     nodejs('nodejs') {
-                    bat "npm install"
-                    bat "npm test"
-                }
-
-                    // You could add a build step if needed
+                        bat "npm install"
+                        bat "npm test"
+                    }
+                    // Additional build steps can be added here if needed
                 }
             }
         }
         stage('Build Order Service') {
             steps {
                 dir('assignment2/order-service') {
-                     bat "mvn clean package"
+                    bat "mvn clean package"
+                }
+            }
+        }
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    // Ensure your SonarQube server is set up in Jenkins Global Configuration with the name "SonarQube"
+                    withSonarQubeEnv('SonarQube') {
+                        // Analyze the user-service (Node.js project)
+                        dir('assignment2/user-service') {
+                            bat "sonar-scanner -Dsonar.projectKey=user-service -Dsonar.sources=. -Dsonar.host.url=%SONAR_HOST_URL% -Dsonar.login=%SONAR_AUTH_TOKEN%"
+                        }
+                        // Analyze the order-service (Maven project)
+                        dir('assignment2/order-service') {
+                            bat "mvn sonar:sonar -Dsonar.projectKey=order-service -Dsonar.host.url=%SONAR_HOST_URL% -Dsonar.login=%SONAR_AUTH_TOKEN%"
+                        }
+                    }
                 }
             }
         }
         stage('Docker Build') {
             steps {
                 script {
-                    // Build Docker images for each service
+                    // Build Docker images using the correct build contexts
                     docker.build("${REGISTRY}/assignment2/user-service:${TAG}", "assignment2/user-service")
                     docker.build("${REGISTRY}/assignment2/order-service:${TAG}", "assignment2/order-service")
                 }
@@ -43,14 +59,12 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Remove existing containers if they exist
+                    // Remove any existing containers if they exist
                     bat "docker rm -f user-service || echo 'No existing user-service container'"
                     bat "docker rm -f order-service || echo 'No existing order-service container'"
 
-                    // Run user-service: Map container port 7001 to host port 7101
+                    // Run the containers with the mapped ports
                     bat "docker run -d -p 7101:7001 --name user-service ${REGISTRY}/assignment2/user-service:${TAG}"
-
-                    // Run order-service: Map container port 7002 to host port 7102
                     bat "docker run -d -p 7102:7002 --name order-service ${REGISTRY}/assignment2/order-service:${TAG}"
                 }
             }
