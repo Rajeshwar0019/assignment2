@@ -48,10 +48,10 @@ pipeline {
                     bat "docker rm -f order-service || echo 'No existing order-service container'"
 
                     // Run user-service: Map container port 7001 to host port 7101
-                    bat "docker run -d -p 7101:7001 --name user-service ${REGISTRY}/user-service:${TAG}"
+                    bat "docker run -d -p 7101:7001 --name user-service ${REGISTRY}/assignment2/user-service:${TAG}"
 
                     // Run order-service: Map container port 7002 to host port 7102
-                    bat "docker run -d -p 7102:7002 --name order-service ${REGISTRY}/order-service:${TAG}"
+                    bat "docker run -d -p 7102:7002 --name order-service ${REGISTRY}/assignment2/order-service:${TAG}"
                 }
             }
         }
