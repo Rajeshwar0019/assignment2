@@ -2,14 +2,14 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY = "2022bcd0022" // Change to your Docker Hub or registry username
+        REGISTRY = "2022bcd0019" // Change to your Docker Hub or registry username
         TAG = "latest"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/vamsi-krishna-2005/assignment21.git'
+                git branch: 'main', url: 'https://github.com/Rajeshwar0019/assignment2.git'
             }
         }
         stage('Build User Service') {
@@ -32,8 +32,8 @@ pipeline {
             steps {
                 script {
                     // Build Docker images for each service
-                    docker.build("${REGISTRY}/user-service:${TAG}", "user-service")
-                    docker.build("${REGISTRY}/order-service:${TAG}", "order-service")
+                    docker.build("${REGISTRY}/assignment2/user-service:${TAG}", "user-service")
+                    docker.build("${REGISTRY}/assignment2/order-service:${TAG}", "order-service")
                 }
             }
         }
