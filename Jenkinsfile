@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        tool name: 'sonar-scanner', type: 'com.cloudbees.jenkins.plugins.customtools.CustomTool'
+    }
+    
     environment {
         REGISTRY = "2022bcd0019" // Docker Hub or registry username
         TAG = "latest"
@@ -33,16 +37,16 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    def scannerHome = tool 'SonarScannerCLI'
                     // Ensure your SonarQube server is set up in Jenkins Global Configuration with the name "SonarQube"
                     withSonarQubeEnv('SonarQube') {
                         // Analyze the user-service (Node.js project)
                         dir('assignment2/user-service') {
-                            bat "\"${scannerHome}\\bin\\sonar-scanner\" ^
+                            bat """ ^
                               -Dsonar.projectKey=assignment2 ^
                               -Dsonar.sources=. ^
                               -Dsonar.host.url=%SONAR_HOST_URL% ^
                               -Dsonar.login=%SONAR_AUTH_TOKEN%"
+                              """
                         }
                         // Analyze the order-service (Maven project)
                         dir('assignment2/order-service') {
