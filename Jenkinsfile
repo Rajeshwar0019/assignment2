@@ -15,8 +15,11 @@ pipeline {
         stage('Build User Service') {
             steps {
                 dir('user-service') {
+                    nodejs('nodejs') {
                     bat "npm install"
                     bat "npm test"
+                }
+
                     // You could add a build step if needed
                 }
             }
