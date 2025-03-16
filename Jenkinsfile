@@ -37,11 +37,11 @@ pipeline {
                     withSonarQubeEnv('SonarQube') {
                         // Analyze the user-service (Node.js project)
                         dir('assignment2/user-service') {
-                            bat "sonar-scanner -Dsonar.projectKey=user-service -Dsonar.sources=. -Dsonar.host.url=%SONAR_HOST_URL% -Dsonar.login=%SONAR_AUTH_TOKEN%"
+                            bat "sonar-scanner -Dsonar.projectKey=assignment2 -Dsonar.sources=. -Dsonar.host.url=%SONAR_HOST_URL% -Dsonar.login=%SONAR_AUTH_TOKEN%"
                         }
                         // Analyze the order-service (Maven project)
                         dir('assignment2/order-service') {
-                            bat "mvn sonar:sonar -Dsonar.projectKey=order-service -Dsonar.host.url=%SONAR_HOST_URL% -Dsonar.login=%SONAR_AUTH_TOKEN%"
+                            bat "mvn sonar:sonar -Dsonar.projectKey=assignment2 -Dsonar.host.url=%SONAR_HOST_URL% -Dsonar.login=%SONAR_AUTH_TOKEN%"
                         }
                     }
                 }
