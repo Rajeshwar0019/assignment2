@@ -47,7 +47,7 @@ pipeline {
                         
                         // Analyze the Maven project
                         dir('assignment2/order-service') {
-                            bat "mvn sonar:sonar -Dsonar.projectKey=order-service -Dsonar.login=%SONAR_AUTH_TOKEN%"
+                            bat "mvn sonar:sonar -Dsonar.projectKey=assignment2 -Dsonar.login=%SONAR_AUTH_TOKEN%"
                         }
                     }
                 }
