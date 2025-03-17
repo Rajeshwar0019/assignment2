@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY = "2022bcd0019" // Docker Hub or private registry username
+        REGISTRY = "2022bcd0019" // Docker Hub or registry username
         TAG = "latest"
     }
 
@@ -12,7 +12,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Rajeshwar0019/assignment2.git'
             }
         }
-
+        
         stage('Build User Service') {
             steps {
                 dir('assignment2/user-service') {
@@ -23,7 +23,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Build Order Service') {
             steps {
                 dir('assignment2/order-service') {
@@ -35,19 +35,19 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    def sonarHome = tool name: 'SonarQube', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-
+                    // Use the correct SonarQube Scanner name from Jenkins settings
+                    def sonarHome = tool name: 'sonar-scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                    
+                    // Ensure SonarQube environment variables are available
                     withSonarQubeEnv('SonarQube') {
-                        try {
-                            dir('assignment2/user-service') {
-                                bat "\"${sonarHome}\\bin\\sonar-scanner\" -Dsonar.projectKey=assignment2 -Dsonar.sources=. -Dsonar.login=%SONAR_AUTH_TOKEN%"
-                            }
-                            dir('assignment2/order-service') {
-                                bat "mvn sonar:sonar -Dsonar.projectKey=order-service -Dsonar.login=%SONAR_AUTH_TOKEN%"
-                            }
-                        } catch (Exception e) {
-                            echo "SonarQube Analysis Failed: ${e}"
-                            currentBuild.result = 'UNSTABLE'
+                        // Analyze the Node.js project
+                        dir('assignment2/user-service') {
+                            bat "\"${sonarHome}\\bin\\sonar-scanner\" -Dsonar.projectKey=assignment2 -Dsonar.sources=. -Dsonar.login=%SONAR_AUTH_TOKEN%"
+                        }
+                        
+                        // Analyze the Maven project
+                        dir('assignment2/order-service') {
+                            bat "mvn sonar:sonar -Dsonar.projectKey=order-service -Dsonar.login=%SONAR_AUTH_TOKEN%"
                         }
                     }
                 }
@@ -57,14 +57,8 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    try {
-                        docker.build("${REGISTRY}/assignment2/user-service:${TAG}", "assignment2/user-service")
-                        docker.build("${REGISTRY}/assignment2/order-service:${TAG}", "assignment2/order-service")
-                    } catch (Exception e) {
-                        echo "Docker Build Failed: ${e}"
-                        currentBuild.result = 'FAILURE'
-                        error("Stopping Pipeline due to Docker build failure")
-                    }
+                    docker.build("${REGISTRY}/assignment2/user-service:${TAG}", "assignment2/user-service")
+                    docker.build("${REGISTRY}/assignment2/order-service:${TAG}", "assignment2/order-service")
                 }
             }
         }
@@ -72,15 +66,10 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    try {
-                        bat "docker rm -f user-service || echo 'No existing user-service container'"
-                        bat "docker rm -f order-service || echo 'No existing order-service container'"
-                        bat "docker run -d -p 7101:7001 --name user-service ${REGISTRY}/assignment2/user-service:${TAG}"
-                        bat "docker run -d -p 7102:7002 --name order-service ${REGISTRY}/assignment2/order-service:${TAG}"
-                    } catch (Exception e) {
-                        echo "Deployment Failed: ${e}"
-                        currentBuild.result = 'FAILURE'
-                    }
+                    bat "docker rm -f user-service || echo 'No existing user-service container'"
+                    bat "docker rm -f order-service || echo 'No existing order-service container'"
+                    bat "docker run -d -p 7101:7001 --name user-service ${REGISTRY}/assignment2/user-service:${TAG}"
+                    bat "docker run -d -p 7102:7002 --name order-service ${REGISTRY}/assignment2/order-service:${TAG}"
                 }
             }
         }
